@@ -1,14 +1,14 @@
 import re
 import json
 from pymongo import MongoClient
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, url_for
 from flask_cors import CORS
 from werkzeug.routing import BaseConverter
 
 
 class RegexConverter(BaseConverter):
-    def __init__(self, url_map,*items):
-        super(RegexConverter,self).__init__(url_map)
+    def __init__(self, url_map, *items):
+        super(RegexConverter, self).__init__(url_map)
         self.regex = items[0]
 
 
@@ -17,7 +17,7 @@ CORS(app)
 app.url_map.converters['reg'] = RegexConverter
 
 
-database = MongoClient('mongodb://localhost:27017').chuangji
+database = MongoClient('mongodb://entry:120903@syver.xyz:27017').chuangji
 HEX62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
@@ -57,25 +57,34 @@ def get():
                     'url': package['url']
                 })['id']
 
-            if url_id != None:
-                url_id = int(url_id)
-                code = ''
-                if url_id >= 62:
-                    while url_id >= 62:
-                        index = url_id % 62
-                        code = HEX62[index] + code
-                        url_id = url_id // 62
-                    code = HEX62[url_id] + code
-                return Response('http://baicaichi.com/item/' + code)
-            else:
-                return Response(None)
+            url_id = int(url_id)
+            code = ''
+            if url_id >= 62:
+                while url_id >= 62:
+                    index = url_id % 62
+                    code = HEX62[index] + code
+                    url_id = url_id // 62
+                code = HEX62[url_id] + code
+            return Response('http://baicaichi.com/item/' + code)
     else:
         return Response(None)
 
 
 @app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
 def goto(code):
-    return code
+    x = 0
+    for i in code:
+        k = HEX62.find(i)
+        if x >= 0:
+            x = x * 62 + k
+
+    try:
+        url = database.shurl.find_one({
+            'id': x
+        })['url']
+        return url_for(url)
+    except:
+        return None
 
 
 if __name__ == '__main__':
