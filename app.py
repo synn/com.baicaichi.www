@@ -10,21 +10,21 @@ class RegexConverter(BaseConverter):
         self.regex = items[0]
 
 
-tinyURL = Flask(__name__)
-CORS(tinyURL)
-tinyURL.url_map.converters['reg'] = RegexConverter
+app = Flask(__name__)
+CORS(app)
+app.url_map.converters['reg'] = RegexConverter
 
 
 db = MongoClient('mongodb://localhost:27017').chuangji
 HEX62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
-@tinyURL.route('/')
+@app.route('/')
 def index():
     return render_template('index.html')
 
 
-@tinyURL.route('/get/', methods=['POST'])
+@app.route('/get/', methods=['POST'])
 def get():
     package = request.form
     urlCheck = 's.click.taobao.com' in package['url']
@@ -73,7 +73,7 @@ def get():
         return Response(None)
 
 
-@tinyURL.route('/item/<reg("[0-9a-zA-Z]+"):code>')
+@app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
 def goto(code):
     url_id = 0
 
@@ -90,4 +90,4 @@ def goto(code):
 
 
 if __name__ == '__main__':
-    tinyURL.run()
+    app.run()
