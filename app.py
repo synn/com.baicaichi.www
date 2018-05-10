@@ -15,7 +15,7 @@ CORS(app)
 app.url_map.converters['reg'] = RegexConverter
 
 
-db = MongoClient('mongodb://localhost:27017').chuangji
+db = MongoClient('mongodb://entry:120903@syver.xyz:27017').chuangji
 HEX62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
@@ -82,11 +82,13 @@ def goto(code):
         if key >= 0:
             url_id = url_id * 62 + key
 
-    url = db.shurl.find_one({
-        'id': url_id
-    })['url']
-
-    return redirect(url)
+    try:
+        url = db.shurl.find_one({
+            'id': url_id
+        })['url']
+        return redirect(url)
+    except:
+        return Response('找不到页面地址，可能已过期')
 
 
 if __name__ == '__main__':
