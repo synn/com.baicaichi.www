@@ -86,7 +86,7 @@ def goto(code):
         url = db.shurl.find_one({
             'id': url_id
         })['url']
-        return redirect(url)
+        return render_template('url.html', url=url)
     except:
         return Response('找不到页面地址，可能已过期')
 
