@@ -15,8 +15,7 @@ app = Flask(__name__)
 CORS(app)
 app.url_map.converters['reg'] = RegexConverter
 
-
-db = MongoClient('mongodb://entry:120903@syver.xyz:27017').chuangji
+db = MongoClient('mongodb://localhost', connect=False).chuangji
 HEX62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
