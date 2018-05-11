@@ -76,25 +76,20 @@ def get():
 
 @app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
 def goto(code):
-    url = db.shurl.find_one({
-        'id': code
-    })['url']
-    return redirect(url)
-    # url_id = 0
-    #
-    # for i in code:
-    #     key = HEX62.find(i)
-    #     if key >= 0:
-    #         url_id = url_id * 62 + key
-    #
-    # try:
-    #     url = db.shurl.find_one({
-    #         'id': url_id
-    #     })['url']
-    #     # return Response(url)
-    #     return redirect(url)
-    # except:
-    #     return Response('找不到页面地址，可能已过期')
+    url_id = 0
+
+    for i in code:
+        key = HEX62.find(i)
+        if key >= 0:
+            url_id = url_id * 62 + key
+
+    try:
+        url = db.shurl.find_one({
+            'id': url_id
+        })['url']
+        return redirect(url)
+    except:
+        return Response('找不到页面地址，可能页面已过期')
 
 
 if __name__ == '__main__':
