@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from flask_cors import CORS
 from werkzeug.routing import BaseConverter
 import time
+import json
 
 
 class RegexConverter(BaseConverter):
@@ -15,7 +16,7 @@ app = Flask(__name__)
 CORS(app)
 app.url_map.converters['reg'] = RegexConverter
 
-db = MongoClient('mongodb://localhost', connect=False).chuangji
+db = MongoClient('mongodb://entry:120903@syver.xyz:27017', connect=False).chuangji
 HEX62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
@@ -86,10 +87,23 @@ def goto(code):
         url = db.shurl.find_one({
             'id': url_id
         })['url']
-        return redirect(url)
+        return render_template('url.html', url=url)
     except:
         return Response('找不到页面地址，可能页面已过期')
 
 
+@app.route('/read/', methods=['POST'])
+def read():
+    if request.method == 'POST':
+    # userAgent = str(request.user_agent)
+    # if 'Android' in userAgent or 'iPhone' in userAgent:
+    #     url = 'taobao://' + str(request.form['url'])
+    # else:
+    #     url = 'http://' + str(request.form['url'])
+        print(request.user_agent)
+
+    # return Response(json.loads(request.form)['url'])
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0')
