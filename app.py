@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, Response, redirect
 from pymongo import MongoClient
 from flask_cors import CORS
 from werkzeug.routing import BaseConverter
+import time
 
 
 class RegexConverter(BaseConverter):
@@ -86,7 +87,8 @@ def goto(code):
         url = db.shurl.find_one({
             'id': url_id
         })['url']
-        return render_template('url.html', url=url)
+        # return Response(url)
+        return redirect(url)
     except:
         return Response('找不到页面地址，可能已过期')
 
