@@ -94,7 +94,9 @@ def opentb(code):
             'id': url_id
         })['url']
         time.sleep(2)
-        return redirect(url)
+        a = redirect(url)
+        a.headers = {'referer': 'https://s.click.taobao.com'}
+        return a
     except:
         return Response('找不到页面地址，可能页面已过期')
 
