@@ -70,13 +70,18 @@ def get():
                     code = HEX62[index] + code
                     url_id = url_id // 62
                 code = HEX62[url_id] + code
-            return Response('http://baicaichi.com/item/' + code)
+            return Response('http://baicaichi.com/url/' + code)
     else:
         return Response(None)
 
 
-@app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
+@app.route('/url/<reg("[0-9a-zA-Z]+"):code>')
 def goto(code):
+    return render_template('url.html', code=base64.b64encode(code.encode(encoding='utf-8')).decode('utf-8'))
+
+
+@app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
+def opentb(code):
     url_id = 0
 
     for i in code:
@@ -87,8 +92,9 @@ def goto(code):
     try:
         url = db.shurl.find_one({
             'id': url_id
-        })['url'].encode(encoding="utf-8")
-        return render_template('url.html', url=base64.b64encode(url).decode("utf-8"))
+        })['url']
+        time.sleep(2)
+        return redirect(url)
     except:
         return Response('找不到页面地址，可能页面已过期')
 
@@ -97,12 +103,13 @@ def goto(code):
 def read():
     if request.method == 'POST':
         userAgent = str(request.user_agent)
-        if 'Android' in userAgent or 'iPhone' in userAgent or 'iPad' in userAgent:
-            url = 'taobao://' + json.loads(request.data)['url']
-        else:
-            url = 'https://' + json.loads(request.data)['url']
+        code = json.loads(request.data)['code']
 
-        time.sleep(2)
+        if 'Android' in userAgent or 'iPhone' in userAgent or 'iPad' in userAgent:
+            url = 'taobao://baicaichi.com/item/' + code
+        else:
+            url = 'http://baicaichi.com/item/' + code
+
         return Response(url)
 
 
