@@ -4,6 +4,7 @@ from flask_cors import CORS
 from werkzeug.routing import BaseConverter
 import time
 import json
+import base64
 
 
 class RegexConverter(BaseConverter):
@@ -13,8 +14,8 @@ class RegexConverter(BaseConverter):
 
 
 app = Flask(__name__)
-CORS(app)
 app.url_map.converters['reg'] = RegexConverter
+CORS(app)
 
 db = MongoClient('mongodb://entry:120903@syver.xyz:27017', connect=False).chuangji
 HEX62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -86,8 +87,8 @@ def goto(code):
     try:
         url = db.shurl.find_one({
             'id': url_id
-        })['url']
-        return render_template('url.html', url=url)
+        })['url'].encode(encoding="utf-8")
+        return render_template('url.html', url=base64.b64encode(url).decode("utf-8"))
     except:
         return Response('找不到页面地址，可能页面已过期')
 
@@ -95,15 +96,15 @@ def goto(code):
 @app.route('/read/', methods=['POST'])
 def read():
     if request.method == 'POST':
-    # userAgent = str(request.user_agent)
-    # if 'Android' in userAgent or 'iPhone' in userAgent:
-    #     url = 'taobao://' + str(request.form['url'])
-    # else:
-    #     url = 'http://' + str(request.form['url'])
-        print(request.user_agent)
+        userAgent = str(request.user_agent)
+        if 'Android' in userAgent or 'iPhone' in userAgent or 'iPad' in userAgent:
+            url = 'taobao://' + json.loads(request.data)['url']
+        else:
+            url = 'https://' + json.loads(request.data)['url']
 
-    # return Response(json.loads(request.form)['url'])
+        time.sleep(2)
+        return Response(url)
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(host='0.0.0.0')
