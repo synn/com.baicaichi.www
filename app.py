@@ -56,8 +56,7 @@ def get():
                 db.shurl.save({
                     'id': item_id,
                     'url': package['url'],
-                    'detail_url': package['detailURL'],
-                    'tkl': package['tkl']
+                    'detail_url': package['detailURL']
                 })
 
                 url_id = db.shurl.find_one({
@@ -72,7 +71,7 @@ def get():
                     code = HEX62[index] + code
                     url_id = url_id // 62
                 code = HEX62[url_id] + code
-            return Response('http://baicaichi.com/item/' + code)
+            return Response('http://baicaichi.com/url/' + code)
     else:
         return Response(None)
 
@@ -138,7 +137,7 @@ def read():
             url = db.shurl.find_one({
                 'id': url_id
             })['url']
-            time.sleep(2)
+            time.sleep(1)
 
             if 'Weibo' in userAgent:
                 url = 'tbopen://m.taobao.com/tbopen/index.html?action=ali.open.nav&module=h5&bootImage=0&h5Url=' + url
