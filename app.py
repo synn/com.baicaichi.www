@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, Response, redirect
 from pymongo import MongoClient
 from flask_cors import CORS
 from werkzeug.routing import BaseConverter
+import re
 import time
 import json
 import base64
@@ -55,7 +56,8 @@ def get():
                 db.shurl.save({
                     'id': item_id,
                     'url': package['url'],
-                    'detail_url': package['detailURL']
+                    'detail_url': package['detailURL'],
+                    'tkl': package['tkl']
                 })
 
                 url_id = db.shurl.find_one({
@@ -70,35 +72,54 @@ def get():
                     code = HEX62[index] + code
                     url_id = url_id // 62
                 code = HEX62[url_id] + code
-            return Response('http://baicaichi.com/url/' + code)
+            return Response('http://baicaichi.com/item/' + code)
     else:
         return Response(None)
 
 
+# # 直接跳转解决方案（已完成）
+# @app.route('/url/<reg("[0-9a-zA-Z]+"):code>')
+# def goto(code):
+#     return render_template('url.html', code=base64.b64encode(code.encode(encoding='utf-8')).decode('utf-8'))
+#
+#
+# @app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
+# def opentb(code):
+#     url_id = 0
+#
+#     for i in code:
+#         key = HEX62.find(i)
+#         if key >= 0:
+#             url_id = url_id * 62 + key
+#
+#     try:
+#         url = db.shurl.find_one({
+#             'id': url_id
+#         })['url']
+#         time.sleep(2)
+#         return redirect(url)
+#     except:
+#         return Response('找不到页面地址，可能页面已过期')
+#
+#
+# @app.route('/read/', methods=['POST'])
+# def read():
+#     if request.method == 'POST':
+#         userAgent = str(request.user_agent)
+#         code = json.loads(request.data)['code']
+#
+#         if 'Weibo' in userAgent:
+#             url = 'tbopen://m.taobao.com/tbopen/index.html?action=ali.open.nav&module=h5&bootImage=0&h5Url=' + code
+#         else:
+#             url = 'http://baicaichi.com/item/' + code
+#
+#         return Response(url)
+
+
+# 直接跳转解决方案2
 @app.route('/url/<reg("[0-9a-zA-Z]+"):code>')
 def goto(code):
     return render_template('url.html', code=base64.b64encode(code.encode(encoding='utf-8')).decode('utf-8'))
-
-
-@app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
-def opentb(code):
-    url_id = 0
-
-    for i in code:
-        key = HEX62.find(i)
-        if key >= 0:
-            url_id = url_id * 62 + key
-
-    try:
-        url = db.shurl.find_one({
-            'id': url_id
-        })['url']
-        time.sleep(2)
-        a = redirect(url)
-        a.headers = {'referer': 'https://s.click.taobao.com'}
-        return a
-    except:
-        return Response('找不到页面地址，可能页面已过期')
 
 
 @app.route('/read/', methods=['POST'])
@@ -106,13 +127,64 @@ def read():
     if request.method == 'POST':
         userAgent = str(request.user_agent)
         code = json.loads(request.data)['code']
+        url_id = 0
 
-        if 'Android' in userAgent or 'iPhone' in userAgent or 'iPad' in userAgent:
-            url = 'taobao://baicaichi.com/item/' + code
-        else:
-            url = 'http://baicaichi.com/item/' + code
+        for i in code:
+            key = HEX62.find(i)
+            if key >= 0:
+                url_id = url_id * 62 + key
 
-        return Response(url)
+        try:
+            url = db.shurl.find_one({
+                'id': url_id
+            })['url']
+            time.sleep(2)
+
+            if 'Weibo' in userAgent:
+                url = 'tbopen://m.taobao.com/tbopen/index.html?action=ali.open.nav&module=h5&bootImage=0&h5Url=' + url
+
+            return Response(url)
+        except:
+            return Response('找不到页面地址，可能页面已过期')
+
+
+# # 淘口令解决方案
+# @app.route('/url/<reg("[0-9a-zA-Z]+"):code>')
+# def goto(code):
+#     return render_template('url.html', code=base64.b64encode(code.encode(encoding='utf-8')).decode('utf-8'))
+#
+#
+# @app.route('/item/<reg("[0-9a-zA-Z]+"):code>')
+# def opentb(code):
+#     url_id = 0
+#
+#     for i in code:
+#         key = HEX62.find(i)
+#         if key >= 0:
+#             url_id = url_id * 62 + key
+#
+#     try:
+#         pkg = db.shurl.find_one({
+#             'id': url_id
+#         })
+#         url = pkg['url']
+#         tkl = pkg['tkl']
+#         return render_template('tkl.html', tkl=tkl, url=url)
+#     except:
+#         return Response('找不到页面地址，可能页面已过期')
+#
+#
+# @app.route('/read/', methods=['POST'])
+# def read():
+#     if request.method == 'POST':
+#         userAgent = str(request.user_agent)
+#         url = json.loads(request.data)['url']
+#
+#         # if re.match('iPhone', userAgent, re.I):
+#         if 'iPhone' in userAgent:
+#             return Response('true')
+#         else:
+#             return Response(url)
 
 
 if __name__ == '__main__':
