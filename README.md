@@ -1,2 +1,2 @@
-# com.baicaichi.www
+# tinyURL
 tiny URL tools
